@@ -1,7 +1,9 @@
 #include <Arduino.h>
+#include <M5Core2.h>
 
 void setup() {
-  // put your setup code here, to run once:
+  M5.begin();
+  M5.Lcd.print("Hello World !");
 }
 
 void loop() {
