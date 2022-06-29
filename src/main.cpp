@@ -2,6 +2,8 @@
 #include <M5Core2.h>
 #include "opm.h"
 
+#define INTERNAL_BUTTON
+
 void setup()
 {
   M5.begin();
@@ -18,5 +20,28 @@ void setup()
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
+  M5.update();
+  #ifdef INTERNAL_BUTTON
+	if (M5.BtnA.wasPressed())
+	{
+		M5.Lcd.clear();
+    M5.Lcd.setCursor(60, 110);
+    M5.Lcd.setTextColor(YELLOW);
+    M5.Lcd.print("A Button pressed");
+	}
+	if (M5.BtnB.wasPressed())
+	{
+    M5.Lcd.clear();
+    M5.Lcd.setCursor(60, 110);
+    M5.Lcd.setTextColor(RED);
+		M5.Lcd.print("B Button pressed");
+	}
+	if (M5.BtnC.wasPressed())
+	{
+    M5.Lcd.clear();
+    M5.Lcd.setCursor(60, 110);
+    M5.Lcd.setTextColor(GREEN);
+		M5.Lcd.print("C Button pressed");
+	}
+  #endif
 }
