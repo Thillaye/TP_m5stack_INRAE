@@ -97,10 +97,16 @@ void loop()
       hum = sht30.humidity;
     }else{
       tmp=0,hum=0;
-    }
-   // M5.lcd.fillRect(0,20,100,60,BLACK);
-    M5.Lcd.setTextSize(3);
-    M5.lcd.setCursor(0,40);
-    M5.Lcd.printf("Temp: %2.1f  \r\nHumidity: %2.0f%%  \r\nPressure:%2.0fPa\r\n", tmp, hum, pressure);
+  }
+	M5.Lcd.drawString(F("TEMPERATURE"),30,30,2);
+	M5.Lcd.drawString(F("°C"),250,20,2);
+	M5.Lcd.drawString(F("HUMIDITY"),30,100,2);
+	M5.Lcd.drawString(F("%"),250,100,2);
+	M5.Lcd.drawString(F("Pressure"),30,157,2);
+	M5.Lcd.drawString(F("Pa"),250,160,2);
+
+	M5.Lcd.drawFloat(tmp, 1, 140, 20, 6);
+	M5.Lcd.drawFloat(hum, 1, 140, 90, 6);
+	M5.Lcd.drawFloat(pressure, 1, 140, 155, 4);
   }
 }
