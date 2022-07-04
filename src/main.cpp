@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <M5Core2.h>
+#include "UNIT_ENV.h"
+
 #include "opm.h"
 
 #define INTERNAL_BUTTON
-#define EXTERNAL_BUTTON
+//#define EXTERNAL_BUTTON
 int last_value = 0;
   int cur_value = 0;
 void setup()
@@ -68,7 +70,5 @@ void loop()
     }
     last_value = cur_value;
   }
-
-
   #endif
 }
