@@ -4,10 +4,23 @@
 
 #include "opm.h"
 
-#define INTERNAL_BUTTON
+//#define INTERNAL_BUTTON
 //#define EXTERNAL_BUTTON
+
+SHT3X sht30;
+QMP6988 qmp6988;
+
 int last_value = 0;
-  int cur_value = 0;
+int cur_value = 0;
+
+float tmp = 0.0;
+float hum = 0.0;
+float pressure = 0.0;
+
+unsigned long ts;
+unsigned long last_update;
+
+
 void setup()
 {
   M5.begin();
@@ -16,18 +29,22 @@ void setup()
   pinMode(32, INPUT);
   #endif
 
+  Wire.begin(14,13);
+  qmp6988.init();
+
   M5.Lcd.drawJpg(opm, sizeof(opm), 75, 30);
   delay(500);
   M5.Lcd.clear();
   
-  M5.Lcd.setCursor(90, 110);
+ /* M5.Lcd.setCursor(90, 110);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.print("Hello World !");
+  M5.Lcd.print("Hello World !"); */
   
 }
 
 void loop()
 {
+  ts = millis();
   M5.update();
   #ifdef INTERNAL_BUTTON
 	if (M5.BtnA.wasPressed())
@@ -71,4 +88,19 @@ void loop()
     last_value = cur_value;
   }
   #endif
+
+  if (ts > last_update + 2000) {
+    last_update = ts;
+    pressure = qmp6988.calcPressure();
+    if(sht30.get()==0){
+      tmp = sht30.cTemp;
+      hum = sht30.humidity;
+    }else{
+      tmp=0,hum=0;
+    }
+   // M5.lcd.fillRect(0,20,100,60,BLACK);
+    M5.Lcd.setTextSize(3);
+    M5.lcd.setCursor(0,40);
+    M5.Lcd.printf("Temp: %2.1f  \r\nHumidity: %2.0f%%  \r\nPressure:%2.0fPa\r\n", tmp, hum, pressure);
+  }
 }
