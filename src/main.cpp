@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <M5Core2.h>
 #include "opm.h"
+#include "plus.h"
+#include "minus.h"
 
 #define INTERNAL_BUTTON
 //#define EXTERNAL_BUTTON
@@ -44,6 +46,10 @@ void setup()
   M5.Lcd.clear();
   
   #ifdef VIBRATOR
+  M5.Lcd.drawJpg(minus,sizeof(minus),38,210,0,0,0,0,JPEG_DIV_8);
+
+	M5.Lcd.drawJpg(plus,sizeof(plus),250,210,0,0,0,0,JPEG_DIV_8);
+
   M5.Lcd.fillRoundRect(128,210,60,28,3,DARKGREY);
   M5.Lcd.fillRoundRect(0,0,320,180,3,BLACK);
   M5.Lcd.setTextColor(WHITE);
@@ -66,6 +72,13 @@ void loop()
 	if (M5.BtnA.wasPressed())
 	{
 		Serial.println("A button pressed");
+    #ifdef VIBRATOR
+		if (vibrator >=20)
+		{
+			vibrator -= 20;
+			vibratorSet(vibrator);
+		}
+		#endif
 	}
 	if (M5.BtnB.wasPressed())
 	{
@@ -78,6 +91,13 @@ void loop()
 	if (M5.BtnC.wasPressed())
 	{
 		Serial.println("C Button pressed");
+    #ifdef VIBRATOR
+		if (vibrator <=980)
+		{
+			vibrator += 20;
+			vibratorSet(vibrator);
+		}
+		#endif
 	}
   #endif
 
