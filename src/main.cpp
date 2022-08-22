@@ -59,6 +59,13 @@ void loop()
       M5.Lcd.setCursor(60, 110);
       M5.Lcd.setTextColor(YELLOW);
       M5.Lcd.print("A Button pressed");
+      #ifdef VIBRATOR
+      if (vibrator >=20)
+      {
+        vibrator -= 20;
+        vibratorSet(vibrator);
+      }
+      #endif
     }
 	if (M5.BtnB.wasPressed())
     {
@@ -77,6 +84,13 @@ void loop()
       M5.Lcd.setCursor(60, 110);
       M5.Lcd.setTextColor(GREEN);
       M5.Lcd.print("C Button pressed");
+      #ifdef VIBRATOR
+      if (vibrator <=980)
+      {
+        vibrator += 20;
+        vibratorSet(vibrator);
+      }
+      #endif
     }
   #endif
 
