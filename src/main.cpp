@@ -57,18 +57,7 @@ void setup()
   M5.Lcd.drawJpg(opm, sizeof(opm), 75, 30);
   delay(500);
   M5.Lcd.clear();
-  
-  #ifdef VIBRATOR
-  M5.Lcd.drawJpg(minus,sizeof(minus),38,210,0,0,0,0,JPEG_DIV_8);
-
-	M5.Lcd.drawJpg(plus,sizeof(plus),250,210,0,0,0,0,JPEG_DIV_8);
-
-  M5.Lcd.fillRoundRect(128,210,60,28,3,DARKGREY);
-  M5.Lcd.fillRoundRect(0,0,320,180,3,BLACK);
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.drawCentreString("STOP",160,215,2);
-  #endif
-  
+    
  /* M5.Lcd.setCursor(90, 110);
   M5.Lcd.setTextSize(2);
   M5.Lcd.print("Hello World !"); */
@@ -141,9 +130,27 @@ void loop()
       hum = sht30.humidity;
     }else{
       tmp=0,hum=0;
-    }
-    M5.lcd.fillRect(0,20,100,60,BLACK);
-    M5.lcd.setCursor(0,20);
-    M5.Lcd.printf("Temp: %2.1f  \r\nHumi: %2.0f%%  \r\nPressure:%2.0fPa\r\n", tmp, hum, pressure);
+      }
+    #ifdef VIBRATOR
+    M5.Lcd.drawJpg(minus,sizeof(minus),38,210,0,0,0,0,JPEG_DIV_8);
+
+    M5.Lcd.drawJpg(plus,sizeof(plus),250,210,0,0,0,0,JPEG_DIV_8);
+
+    M5.Lcd.fillRoundRect(128,210,60,28,3,DARKGREY);
+    M5.Lcd.fillRoundRect(0,0,320,180,3,BLACK);
+    M5.Lcd.setTextColor(WHITE);
+    M5.Lcd.drawCentreString("STOP",160,215,2);
+    #endif
+
+    M5.Lcd.drawString(F("TEMPERATURE"),30,30,2);
+    M5.Lcd.drawString(F("°C"),250,20,2);
+    M5.Lcd.drawString(F("HUMIDITY"),30,100,2);
+    M5.Lcd.drawString(F("%"),250,100,2);
+    M5.Lcd.drawString(F("Pressure"),30,157,2);
+    M5.Lcd.drawString(F("Pa"),250,160,2);
+
+    M5.Lcd.drawFloat(tmp, 1, 140, 20, 6);
+    M5.Lcd.drawFloat(hum, 1, 140, 90, 6);
+    M5.Lcd.drawFloat(pressure, 1, 140, 155, 4);    
   }
 }
