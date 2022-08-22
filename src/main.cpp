@@ -3,9 +3,29 @@
 #include "opm.h"
 
 #define INTERNAL_BUTTON
-#define EXTERNAL_BUTTON
+//#define EXTERNAL_BUTTON
+#define VIBRATOR
+
+#ifdef VIBRATOR
+#define VIBRATOR_PIN 32
+#define VIBRATOR_PWM_FREQ 10000
+#define VIBRATOR_PWM_CHANNEL 0
+#define VIBRATOR_PWM_RESOLUTION 10
+#endif
+
 int last_value = 0;
-  int cur_value = 0;
+int cur_value = 0;
+int vibrator = 500;
+
+void vibratorSetup() {
+    ledcSetup(VIBRATOR_PWM_CHANNEL, VIBRATOR_PWM_FREQ, VIBRATOR_PWM_RESOLUTION);
+    ledcAttachPin(VIBRATOR_PIN, VIBRATOR_PWM_CHANNEL);
+}
+
+void vibratorSet(uint32_t duty) {
+    ledcWrite(VIBRATOR_PWM_CHANNEL, duty);
+}
+
 void setup()
 {
   M5.begin();
@@ -14,13 +34,18 @@ void setup()
   pinMode(32, INPUT);
   #endif
 
+  #ifdef VIBRATOR
+    vibratorSetup();
+    vibratorSet(0);
+  #endif
+
   M5.Lcd.drawJpg(opm, sizeof(opm), 75, 30);
   delay(500);
   M5.Lcd.clear();
   
-  M5.Lcd.setCursor(90, 110);
+ /* M5.Lcd.setCursor(90, 110);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.print("Hello World !");
+  M5.Lcd.print("Hello World !"); */
   
 }
 
@@ -41,6 +66,10 @@ void loop()
       M5.Lcd.setCursor(60, 110);
       M5.Lcd.setTextColor(RED);
       M5.Lcd.print("B Button pressed");
+      #ifdef VIBRATOR
+      vibrator = 500;
+      vibratorSet(0);
+      #endif
     }
 	if (M5.BtnC.wasPressed())
     {
@@ -68,7 +97,5 @@ void loop()
     }
     last_value = cur_value;
   }
-
-
   #endif
 }
