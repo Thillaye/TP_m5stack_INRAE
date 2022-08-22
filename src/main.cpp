@@ -3,9 +3,29 @@
 #include "opm.h"
 
 #define INTERNAL_BUTTON
-#define EXTERNAL_BUTTON
+//#define EXTERNAL_BUTTON
+#define VIBRATOR
+
+#ifdef VIBRATOR
+#define VIBRATOR_PIN 32
+#define VIBRATOR_PWM_FREQ 10000
+#define VIBRATOR_PWM_CHANNEL 0
+#define VIBRATOR_PWM_RESOLUTION 10
+#endif
+
 int last_value = 0;
-  int cur_value = 0;
+int cur_value = 0;
+int vibrator = 500;
+
+void vibratorSetup() {
+    ledcSetup(VIBRATOR_PWM_CHANNEL, VIBRATOR_PWM_FREQ, VIBRATOR_PWM_RESOLUTION);
+    ledcAttachPin(VIBRATOR_PIN, VIBRATOR_PWM_CHANNEL);
+}
+
+void vibratorSet(uint32_t duty) {
+    ledcWrite(VIBRATOR_PWM_CHANNEL, duty);
+}
+
 void setup()
 {
   M5.begin();
@@ -14,41 +34,51 @@ void setup()
   pinMode(32, INPUT);
   #endif
 
+  #ifdef VIBRATOR
+    vibratorSetup();
+    vibratorSet(0);
+  #endif
+
   M5.Lcd.drawJpg(opm, sizeof(opm), 75, 30);
   delay(500);
   M5.Lcd.clear();
   
-  M5.Lcd.setCursor(90, 110);
+  #ifdef VIBRATOR
+  M5.Lcd.fillRoundRect(128,210,60,28,3,DARKGREY);
+  M5.Lcd.fillRoundRect(0,0,320,180,3,BLACK);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.drawCentreString("STOP",160,215,2);
+  #endif
+  
+ /* M5.Lcd.setCursor(90, 110);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.print("Hello World !");
+  M5.Lcd.print("Hello World !"); */
+
+  
   
 }
 
 void loop()
 {
   M5.update();
+
   #ifdef INTERNAL_BUTTON
 	if (M5.BtnA.wasPressed())
-    {
-      M5.Lcd.clear();
-      M5.Lcd.setCursor(60, 110);
-      M5.Lcd.setTextColor(YELLOW);
-      M5.Lcd.print("A Button pressed");
-    }
+	{
+		Serial.println("A button pressed");
+	}
 	if (M5.BtnB.wasPressed())
-    {
-      M5.Lcd.clear();
-      M5.Lcd.setCursor(60, 110);
-      M5.Lcd.setTextColor(RED);
-      M5.Lcd.print("B Button pressed");
-    }
+	{
+		Serial.println("B Button pressed");
+		#ifdef VIBRATOR
+		vibrator = 500;
+		vibratorSet(0);
+		#endif
+	}
 	if (M5.BtnC.wasPressed())
-    {
-      M5.Lcd.clear();
-      M5.Lcd.setCursor(60, 110);
-      M5.Lcd.setTextColor(GREEN);
-      M5.Lcd.print("C Button pressed");
-    }
+	{
+		Serial.println("C Button pressed");
+	}
   #endif
 
   #ifdef EXTERNAL_BUTTON
@@ -68,7 +98,6 @@ void loop()
     }
     last_value = cur_value;
   }
-
-
-  #endif
+    #endif
+    
 }
