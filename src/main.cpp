@@ -3,6 +3,7 @@
 #include "opm.h"
 #include "plus.h"
 #include "minus.h"
+#include "UNIT_ENV.h"
 
 #define INTERNAL_BUTTON
 //#define EXTERNAL_BUTTON
@@ -18,6 +19,15 @@
 int last_value = 0;
 int cur_value = 0;
 int vibrator = 500;
+SHT3X sht30;
+QMP6988 qmp6988;
+
+float tmp = 0.0;
+float hum = 0.0;
+float pressure = 0.0;
+unsigned long ts;
+unsigned long last_update;
+
 
 void vibratorSetup() {
     ledcSetup(VIBRATOR_PWM_CHANNEL, VIBRATOR_PWM_FREQ, VIBRATOR_PWM_RESOLUTION);
@@ -30,7 +40,7 @@ void vibratorSet(uint32_t duty) {
 
 void setup()
 {
-  M5.begin();
+  M5.begin(true, false, true, false);
   
   #ifdef EXTERNAL_BUTTON
   pinMode(32, INPUT);
@@ -40,6 +50,9 @@ void setup()
     vibratorSetup();
     vibratorSet(0);
   #endif
+
+  Wire.begin(14,13);
+  qmp6988.init();
 
   M5.Lcd.drawJpg(opm, sizeof(opm), 75, 30);
   delay(500);
@@ -66,6 +79,7 @@ void setup()
 
 void loop()
 {
+  ts = millis();
   M5.update();
 
   #ifdef INTERNAL_BUTTON
@@ -118,6 +132,18 @@ void loop()
     }
     last_value = cur_value;
   }
-    #endif
-    
+  #endif
+  if (ts > last_update + 2000) {
+    last_update = ts;
+    pressure = qmp6988.calcPressure();
+    if(sht30.get()==0){
+      tmp = sht30.cTemp;
+      hum = sht30.humidity;
+    }else{
+      tmp=0,hum=0;
+    }
+    M5.lcd.fillRect(0,20,100,60,BLACK);
+    M5.lcd.setCursor(0,20);
+    M5.Lcd.printf("Temp: %2.1f  \r\nHumi: %2.0f%%  \r\nPressure:%2.0fPa\r\n", tmp, hum, pressure);
+  }
 }
