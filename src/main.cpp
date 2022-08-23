@@ -4,10 +4,10 @@
 #include "plus.h"
 #include "minus.h"
 #include "UNIT_ENV.h"
-
+#include <time.h>
 #define INTERNAL_BUTTON
 //#define EXTERNAL_BUTTON
-#define VIBRATOR
+//#define VIBRATOR
 
 #ifdef VIBRATOR
 #define VIBRATOR_PIN 32
@@ -16,11 +16,23 @@
 #define VIBRATOR_PWM_RESOLUTION 10
 #endif
 
+struct sensorData_t{
+ // float timestamp;
+  float temperature;
+  float humidity;
+  int pressure;
+  unsigned long timestamp;
+};
+
+
 int last_value = 0;
 int cur_value = 0;
 int vibrator = 500;
 SHT3X sht30;
 QMP6988 qmp6988;
+RTC_TimeTypeDef TimeStruct;
+RTC_DateTypeDef DateStruct;
+sensorData_t data;
 
 float tmp = 0.0;
 float hum = 0.0;
@@ -28,7 +40,7 @@ float pressure = 0.0;
 unsigned long ts;
 unsigned long last_update;
 
-
+#ifdef vibrator
 void vibratorSetup() {
     ledcSetup(VIBRATOR_PWM_CHANNEL, VIBRATOR_PWM_FREQ, VIBRATOR_PWM_RESOLUTION);
     ledcAttachPin(VIBRATOR_PIN, VIBRATOR_PWM_CHANNEL);
@@ -37,6 +49,7 @@ void vibratorSetup() {
 void vibratorSet(uint32_t duty) {
     ledcWrite(VIBRATOR_PWM_CHANNEL, duty);
 }
+#endif
 
 void setup()
 {
@@ -62,7 +75,15 @@ void setup()
   M5.Lcd.setTextSize(2);
   M5.Lcd.print("Hello World !"); */
 
-  
+  TimeStruct.Hours   = 16;    //Set the specific time of the real-time clock structure.
+  TimeStruct.Minutes = 31;
+  TimeStruct.Seconds = 50;
+  M5.Rtc.SetTime(&TimeStruct);    //Writes the set time to the real-time clock.
+  DateStruct.WeekDay = 3;
+  DateStruct.Month = 8;
+  DateStruct.Date = 24;
+  DateStruct.Year = 2022;
+  M5.Rtc.SetDate(&DateStruct);
   
 }
 
@@ -141,16 +162,38 @@ void loop()
     M5.Lcd.setTextColor(WHITE);
     M5.Lcd.drawCentreString("STOP",160,215,2);
     #endif
+    M5.Rtc.GetTime(&TimeStruct);  
+    M5.Lcd.drawString(F("TEMPERATURE"),30,25,2);
+    M5.Lcd.drawString(F("°C"),250,15,2);
+    M5.Lcd.drawString(F("HUMIDITY"),30,85,2);
+    M5.Lcd.drawString(F("%"),250,75,2);
+    M5.Lcd.drawString(F("Pressure"),30,132,2);
+    M5.Lcd.drawString(F("Pa"),250,135,2);
 
-    M5.Lcd.drawString(F("TEMPERATURE"),30,30,2);
-    M5.Lcd.drawString(F("°C"),250,20,2);
-    M5.Lcd.drawString(F("HUMIDITY"),30,100,2);
-    M5.Lcd.drawString(F("%"),250,100,2);
-    M5.Lcd.drawString(F("Pressure"),30,157,2);
-    M5.Lcd.drawString(F("Pa"),250,160,2);
+    M5.Lcd.drawFloat(tmp, 1, 140, 15, 6);
+    M5.Lcd.drawFloat(hum, 1, 140, 75, 6);
+    M5.Lcd.drawFloat(pressure, 1, 140, 130, 4);
+    M5.Lcd.setCursor(30, 175);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.printf("Time: %02d : %02d : %02d",TimeStruct.Hours, TimeStruct.Minutes, TimeStruct.Seconds);
+    M5.Lcd.setTextSize(1);
 
-    M5.Lcd.drawFloat(tmp, 1, 140, 20, 6);
-    M5.Lcd.drawFloat(hum, 1, 140, 90, 6);
-    M5.Lcd.drawFloat(pressure, 1, 140, 155, 4);    
+    data.temperature = tmp;
+    data.humidity = hum;
+    data.pressure = pressure;
+    
+    M5.Rtc.GetTime(&TimeStruct);
+    M5.Rtc.GetDate(&DateStruct); 
+    struct tm currTime;
+    currTime.tm_year = DateStruct.Year - 1900;
+    currTime.tm_mday = DateStruct.Date;
+    currTime.tm_mon  = DateStruct.Month -1 ;
+    currTime.tm_hour = TimeStruct.Hours - 2;
+    currTime.tm_min  = TimeStruct.Minutes;
+    currTime.tm_sec  = TimeStruct.Seconds;
+    data.timestamp = mktime(&currTime);
+    Serial.println(data.timestamp);
+
+
   }
 }
