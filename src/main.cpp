@@ -16,18 +16,26 @@
 #define VIBRATOR_PWM_RESOLUTION 10
 #endif
 
+struct sensorData_t{
+  float temperature;
+  float humidity;
+  int pressure;
+  unsigned long timestamp;
+};
+
 int last_value = 0;
 int cur_value = 0;
 int vibrator = 500;
 SHT3X sht30;
 QMP6988 qmp6988;
+sensorData_t data;
 
 float tmp = 0.0;
 float hum = 0.0;
 float pressure = 0.0;
 unsigned long ts;
 unsigned long last_update;
-
+byte raw[30];
 
 void vibratorSetup() {
     ledcSetup(VIBRATOR_PWM_CHANNEL, VIBRATOR_PWM_FREQ, VIBRATOR_PWM_RESOLUTION);
@@ -37,6 +45,23 @@ void vibratorSetup() {
 void vibratorSet(uint32_t duty) {
     ledcWrite(VIBRATOR_PWM_CHANNEL, duty);
 }
+
+void encodestruct(struct sensorData_t data,byte bytes[2]) {
+    signed short temp = data.temperature *100;
+    bytes[0] = (temp>>8) & 0xFF;
+    bytes[1] = temp  & 0xFF;
+    signed short hum = data.humidity *100;
+    bytes[2] = (hum>>8) & 0xFF;
+    bytes[3] = hum  & 0xFF;
+    signed pres = data.pressure ;
+    Serial.println(pres);
+    bytes[4] = (pres>>16) & 0xFF;
+    bytes[5] = (pres>>8) & 0xFF;
+    bytes[6] = pres  & 0xFF;
+    unsigned long ts = data.timestamp;
+    bytes[7] = (ts>>8) & 0xFF;
+    bytes[8] = ts  & 0xFF;
+};
 
 void setup()
 {
@@ -62,8 +87,6 @@ void setup()
   M5.Lcd.setTextSize(2);
   M5.Lcd.print("Hello World !"); */
 
-  
-  
 }
 
 void loop()
@@ -142,7 +165,7 @@ void loop()
     M5.Lcd.drawCentreString("STOP",160,215,2);
     #endif
 
-   M5.Lcd.drawString(F("TEMPERATURE"),30,25,2);
+    M5.Lcd.drawString(F("TEMPERATURE"),30,25,2);
     M5.Lcd.drawString(F("°C"),250,15,2);
     M5.Lcd.drawString(F("HUMIDITY"),30,85,2);
     M5.Lcd.drawString(F("%"),250,75,2);
@@ -155,5 +178,11 @@ void loop()
     M5.Lcd.drawFloat(hum, 1, 140, 75, 6);
     M5.Lcd.drawFloat(pressure, 1, 140, 130, 4);
     M5.Lcd.drawFloat(last_update, 1, 140, 165, 2);
+
+    data.temperature = tmp;
+    data.humidity = hum;
+    data.pressure = pressure;
+    data.timestamp = last_update;
+    encodestruct(data,raw);
   }
 }
